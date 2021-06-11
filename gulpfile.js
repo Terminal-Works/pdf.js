@@ -589,13 +589,7 @@ function buildGeneric(defines, dir) {
     createWebBundle2(defines).pipe(gulp.dest(dir + "tw-web")),
     gulp.src(COMMON_WEB_FILES, { base: "web/" }).pipe(gulp.dest(dir + "web")),
     gulp
-      .src("tw-web/css/*", { base: "tw-web/" })
-      .pipe(gulp.dest(dir + "tw-web")),
-    gulp
-      .src("tw-web/css/images/light/*", { base: "tw-web/css/images/" })
-      .pipe(gulp.dest(dir + "tw-web/css/images")),
-    gulp
-      .src(COMMON_WEB_FILES, { base: "tw-web/" })
+      .src("tw-web/css/**/*", { base: "tw-web/" })
       .pipe(gulp.dest(dir + "tw-web")),
     gulp.src("LICENSE").pipe(gulp.dest(dir)),
     gulp
