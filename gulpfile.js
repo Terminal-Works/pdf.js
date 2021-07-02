@@ -606,7 +606,7 @@ function buildGeneric(defines, dir) {
     preprocessHTML("tw-web/viewer.html", defines).pipe(
       gulp.dest(dir + "tw-web")
     ),
-
+    gulp.src("tw-web/pdfprint-manual.pdf").pipe(gulp.dest(dir + "tw-web")),
     preprocessCSS("web/viewer.css", "generic", defines, true)
       .pipe(
         postcss([
