@@ -431,6 +431,10 @@ class PasswordException extends BaseException {
   constructor(msg, code) {
     super(msg);
     this.code = code;
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "PasswordException";
+    }
   }
 }
 
@@ -438,29 +442,70 @@ class UnknownErrorException extends BaseException {
   constructor(msg, details) {
     super(msg);
     this.details = details;
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "UnknownErrorException";
+    }
   }
 }
 
-class InvalidPDFException extends BaseException {}
+class InvalidPDFException extends BaseException {
+  constructor(msg) {
+    super(msg);
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "InvalidPDFException";
+    }
+  }
+}
 
-class MissingPDFException extends BaseException {}
+class MissingPDFException extends BaseException {
+  constructor(msg) {
+    super(msg);
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "MissingPDFException";
+    }
+  }
+}
 
 class UnexpectedResponseException extends BaseException {
   constructor(msg, status) {
     super(msg);
     this.status = status;
+
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "UnexpectedResponseException";
+    }
   }
 }
 
 /**
  * Error caused during parsing PDF data.
  */
-class FormatError extends BaseException {}
+class FormatError extends BaseException {
+  constructor(msg) {
+    super(msg);
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "FormatError";
+    }
+  }
+}
 
 /**
  * Error used to indicate task cancellation.
  */
-class AbortException extends BaseException {}
+class AbortException extends BaseException {
+  constructor(msg) {
+    super(msg);
+    if (!this.name) {
+      // IE11 Workaround
+      this.name = "AbortException";
+    }
+  }
+}
 
 const NullCharactersRegExp = /\x00/g;
 
