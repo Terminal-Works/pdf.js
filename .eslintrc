@@ -9,6 +9,7 @@
     "mozilla",
     "no-unsanitized",
     "unicorn",
+    "prettier"
   ],
 
   "extends": [
@@ -38,6 +39,7 @@
     "no-unsanitized/property": "error",
     "unicorn/no-array-instanceof": "error",
     "unicorn/prefer-starts-ends-with": "error",
+    "prettier/prettier": "error",
 
     // Possible errors
     "for-direction": "error",
