@@ -43,6 +43,9 @@ import {
  */
 var renderTextLayer = (function renderTextLayerClosure() {
   var MAX_TEXT_DIVS_TO_RENDER = 100000;
+  const DEFAULT_FONT_SIZE = 30;
+  const DEFAULT_FONT_ASCENT = 0.8;
+  const ascentCache = new Map();
 
   var NonWhitespaceRegexp = /\S/;
 
@@ -50,7 +53,74 @@ var renderTextLayer = (function renderTextLayerClosure() {
     return !NonWhitespaceRegexp.test(str);
   }
 
-  function appendText(task, geom, styles) {
+  function getAscent(fontFamily, ctx) {
+    const cachedAscent = ascentCache.get(fontFamily);
+    if (cachedAscent) {
+      return cachedAscent;
+    }
+
+    ctx.save();
+    ctx.font = `${DEFAULT_FONT_SIZE}px ${fontFamily}`;
+    const metrics = ctx.measureText("");
+
+    // Both properties aren't available by default in Firefox.
+    let ascent = metrics.fontBoundingBoxAscent;
+    let descent = Math.abs(metrics.fontBoundingBoxDescent);
+    if (ascent) {
+      ctx.restore();
+      const ratio = ascent / (ascent + descent);
+      ascentCache.set(fontFamily, ratio);
+      return ratio;
+    }
+
+    // Try basic heuristic to guess ascent/descent.
+    // Draw a g with baseline at 0,0 and then get the line
+    // number where a pixel has non-null red component (starting
+    // from bottom).
+    ctx.strokeStyle = "red";
+    ctx.clearRect(0, 0, DEFAULT_FONT_SIZE, DEFAULT_FONT_SIZE);
+    ctx.strokeText("g", 0, 0);
+    let pixels = ctx.getImageData(
+      0,
+      0,
+      DEFAULT_FONT_SIZE,
+      DEFAULT_FONT_SIZE
+    ).data;
+    descent = 0;
+    for (let i = pixels.length - 1 - 3; i >= 0; i -= 4) {
+      if (pixels[i] > 0) {
+        descent = Math.ceil(i / 4 / DEFAULT_FONT_SIZE);
+        break;
+      }
+    }
+
+    // Draw an A with baseline at 0,DEFAULT_FONT_SIZE and then get the line
+    // number where a pixel has non-null red component (starting
+    // from top).
+    ctx.clearRect(0, 0, DEFAULT_FONT_SIZE, DEFAULT_FONT_SIZE);
+    ctx.strokeText("A", 0, DEFAULT_FONT_SIZE);
+    pixels = ctx.getImageData(0, 0, DEFAULT_FONT_SIZE, DEFAULT_FONT_SIZE).data;
+    ascent = 0;
+    for (let i = 0, ii = pixels.length; i < ii; i += 4) {
+      if (pixels[i] > 0) {
+        ascent = DEFAULT_FONT_SIZE - Math.floor(i / 4 / DEFAULT_FONT_SIZE);
+        break;
+      }
+    }
+
+    ctx.restore();
+
+    if (ascent) {
+      const ratio = ascent / (ascent + descent);
+      ascentCache.set(fontFamily, ratio);
+      return ratio;
+    }
+
+    ascentCache.set(fontFamily, DEFAULT_FONT_ASCENT);
+    return DEFAULT_FONT_ASCENT;
+  }
+
+  function appendText(task, geom, styles, ctx) {
     // Initialize all used properties to keep the caches monomorphic.
     var textDiv = document.createElement("span");
     var textDivProperties = {
@@ -79,12 +149,7 @@ var renderTextLayer = (function renderTextLayerClosure() {
       angle += Math.PI / 2;
     }
     var fontHeight = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]);
-    var fontAscent = fontHeight;
-    if (style.ascent) {
-      fontAscent = style.ascent * fontAscent;
-    } else if (style.descent) {
-      fontAscent = (1 + style.descent) * fontAscent;
-    }
+    var fontAscent = fontHeight * getAscent(style.fontFamily, ctx);
 
     let left, top;
     if (angle === 0) {
@@ -565,7 +630,7 @@ var renderTextLayer = (function renderTextLayerClosure() {
     _processItems(items, styleCache) {
       for (let i = 0, len = items.length; i < len; i++) {
         this._textContentItemsStr.push(items[i].str);
-        appendText(this, items[i], styleCache);
+        appendText(this, items[i], styleCache, this._layoutTextCtx);
       }
     },
 

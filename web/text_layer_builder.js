@@ -110,6 +110,15 @@ class TextLayerBuilder {
         this.textLayerDiv.appendChild(textLayerFrag);
         this._finishRendering();
         this._updateMatches();
+        /* console.log(
+          this.textContent,
+          this.textContentItemsStr,
+          this.textContentStream,
+          this.enhanceTextSelection,
+          this.textDivs,
+          timeout,
+          textLayerFrag
+        ); */
       },
       function (reason) {
         // Cancelled or failed to render text layer; skipping errors.
@@ -324,13 +333,8 @@ class TextLayerBuilder {
     if (!this.renderingDone) {
       return;
     }
-    const {
-      findController,
-      matches,
-      pageIdx,
-      textContentItemsStr,
-      textDivs,
-    } = this;
+    const { findController, matches, pageIdx, textContentItemsStr, textDivs } =
+      this;
     let clearedUntilDivIdx = -1;
 
     // Clear all current matches.
@@ -402,6 +406,7 @@ class TextLayerBuilder {
           const divBounds = div.getBoundingClientRect();
           const r = Math.max(0, (evt.pageY - divBounds.top) / divBounds.height);
           end.style.top = (r * 100).toFixed(2) + "%";
+          // console.log("adjustTop", end.style.top, divBounds, evt.PageY, r);
         }
       }
       end.classList.add("active");
